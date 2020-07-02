@@ -1,7 +1,7 @@
 # ts-battle
 Projekt zaliczeniowy na programowanie aplikacji webowych
 
-#Instrukcja
+Instrukcja
 
 Niebieskie kropki to jednostki gracza. Czerwone to wrogowie.
 Wrogowie na razie nie mają żadnego AI i tylko stoją w miejscu.
