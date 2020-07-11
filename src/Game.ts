@@ -7,13 +7,18 @@ import { Painter } from "./Painter";
 import { Node } from "./Node";
 import { PlayerTurn } from "./PlayerTurn";
 import { Utils } from "./Utils";
+import { Drawable } from "./Drawable";
 
 export class Game
 {
+    public readonly enemyUnitNumber: number = 3;
+    public readonly playerUnitNumber: number = 3;
+
     private readonly canvas: HTMLCanvasElement;
     private readonly painter: Painter;
     private readonly map: GameMap;
     private readonly inputManager: InputManager;
+    private enemyUnitsLeft: number = this.enemyUnitNumber;
 
     /**All units owned by player */
     private readonly playerUnits: Unit[];
@@ -31,21 +36,50 @@ export class Game
         this.aiUnits = new Array<Unit>(0);
 
         // spawn player's units
-        const playerSpawnNodes: Node[] = [this.map.nodes[1][1], this.map.nodes[3][3], this.map.nodes[6][1]];
-        this.playerUnits = this.SpawnUnits(playerSpawnNodes, "blue");
+        const spawnNodes: Node[] = this.GetRandomSpawnNodes(this.playerUnitNumber + this.enemyUnitNumber);
+        let leftSide = spawnNodes.slice(0, this.playerUnitNumber);
+        let rightSide = spawnNodes.slice(this.playerUnitNumber);
+        this.playerUnits = this.SpawnUnits(leftSide, "blue");
 
-        const aiSpawnNodes: Node[] = [this.map.nodes[1][18], this.map.nodes[3][16], this.map.nodes[6][18]];
-        this.aiUnits = this.SpawnUnits(aiSpawnNodes, "red");
 
+        this.aiUnits = this.SpawnUnits(rightSide, "red");
+        // this.WinGame();
         this.Start();
     }
 
     /**Called once when game starts */
     private Start(): void
-    {
-        
-        window.requestAnimationFrame(this.Update.bind(this));
+    {        
         this.NextTurn();
+    }
+
+    private GetRandomSpawnNodes(nodeNumber: number): Node[]
+    {
+        let spawnNodes: Node[] = new Array<Node>(nodeNumber);
+        let spawnNodeIds: [number, number][] = new Array<[number, number]>(nodeNumber);
+        for (let i = 0; i < nodeNumber; i++)
+        {
+            let done: boolean = false;
+            while (!done)
+            {
+                let newSpawnId: [number, number] = [this.GetRandomInt(this.map.height - 5), this.GetRandomInt(this.map.width - 10)];
+                if (!Utils.IsElementInArray(spawnNodeIds, newSpawnId))
+                {
+                    done = true;
+                    spawnNodeIds.push(newSpawnId);
+                    const newSpawnNode = this.map.nodes[newSpawnId[0]][newSpawnId[1]];
+                    spawnNodes[i] = newSpawnNode;
+                }
+            }
+        }
+        return spawnNodes;
+    }
+
+    private GetRandomInt(max: number)
+    {
+        let rnd: number = Math.random();
+        rnd *= (max-1);
+        return Math.round(rnd);
     }
 
     /**Spawns and returns units with default stats in provided nodes */
@@ -62,14 +96,6 @@ export class Game
         }
 
         return spawnedUnits;
-    }
-
-    /**Called every frame */
-    private Update(): void
-    {
-        
-
-        window.requestAnimationFrame(this.Update.bind(this));
     }
 
     /**Starts next turn */
@@ -104,5 +130,28 @@ export class Game
 
         this.inputManager.UnregisterClickable(unit);
         this.painter.UnregisterDrawable(unit);
+
+        this.enemyUnitsLeft--;
+        console.log(`Enemy units left: ${this.enemyUnitsLeft}`);
+        if (this.enemyUnitsLeft <= 0)
+        {
+            this.WinGame();
+        }
     }
+
+    private WinGame(): void
+    {
+        console.log("You win!");
+        this.painter.RegisterDrawable(new Win(), 1);
+    }
+
+}
+
+class Win implements Drawable
+{
+    Draw(context: CanvasRenderingContext2D): void
+    {
+        CanvasHelper.DrawText(CanvasHelper.sharedContext, "You Win!", new Vector2(500, 250), 200, "Arial", "blue");
+    }
+    
 }

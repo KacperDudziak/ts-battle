@@ -11,14 +11,12 @@ export class GameMap
     private readonly canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
     private readonly context: CanvasRenderingContext2D = this.canvas.getContext("2d");
 
-    private readonly width: number = 20;
-    private readonly height: number = 10;
+    readonly width: number = 20;
+    readonly height: number = 10;
     private readonly space: number = 50;
     private readonly margin: number = 10;
     private readonly nodeRadious = 7.5;
 
-    private readonly startPosition: Vector2 = new Vector2(0, 5);
-    private readonly targetPosition: Vector2 = new Vector2(this.width - 1, 4);
     private readonly obstacles: Vector2[] = [new Vector2(10, 3), new Vector2(10, 4), new Vector2(10, 5), new Vector2(10, 6), new Vector2(9, 7), new Vector2(8, 7)];
     /**Get nodes using their coordinates like nodes[y][x] */
     public readonly nodes: Node[][] = new Array<Array<Node>>(this.height);
